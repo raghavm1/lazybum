@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Enter Text</title>
+    <link rel="stylesheet" type="text/css" href="popup.css" />
+  </head>
+  <body>
+    <div id="popupContainer">
+      <div id="apiAdderContainer">
+        <h3>Enter your OpenAI API key:</h3>
+        <form id="apiAdder">
+          <input
+            type="text"
+            id="textInput"
+            required
+            placeholder="Enter API Key"
+          />
+          <button type="submit" id="submitButtonAPI">Save</button>
+        </form>
+      </div>
+      <div id="formContainer">
+        <h3>What do you want from this page?</h3>
+        <form id="queryForm">
+          <input
+            type="text"
+            id="queryInput"
+            required
+            placeholder="Enter query"
+          />
+          <button type="submit" id="submitButtonForm">Enter</button>
+        </form>
+      </div>
+      <div id="output"></div>
+    </div>
+    <div id="removerContainer">
+      Remove existing API key?
+      <button id="removeAPIkey">Yes</button>
+    </div>
+    <script src="scripts/popup.js"></script>
+  </body>
+</html>

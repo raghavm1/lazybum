@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Tell me what",
+  "description": "Answer everything so that you don't need to spend time for it",
+  "version": "1.0",
+  "permissions": ["storage", "tabs", "scripting"],
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "bulb.png"
+  },
+
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": ["https://*/*", "*://*/*"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 10px;
+  }
+  #popupContainer {
+    width: 400px;
+    height: 300px;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  #textInput {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+  }
+  #submitButton {
+    padding: 8px;
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  #submitButton:hover {
+    background-color: #45a049;
+  }
+  #output {
+    margin-top: 10px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
