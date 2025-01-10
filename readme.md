@@ -27,11 +27,13 @@ Easy to just find what you want really.
 1. Enable Developer Mode in Chrome
 
 Open Chrome and go to the Extensions page:
-• Navigate to chrome://extensions/ in the address bar.
-• Alternatively, click the three-dot menu in the top-right corner > More tools > Extensions.
+
+- Navigate to chrome://extensions/ in the address bar.
+- Alternatively, click the three-dot menu in the top-right corner > More tools > Extensions.
 
 2. Enable Developer mode:
-   • Toggle the Developer mode switch in the top-right corner of the Extensions page.
+
+   - Toggle the Developer mode switch in the top-right corner of the Extensions page.
 
 3. Load Your Extension
    1. Click the “Load unpacked” button.
