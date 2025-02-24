@@ -14,7 +14,7 @@ Here's a simple chrome extension to help you out.
 
 Just ask it about the page you're on, and get to the point.
 
-![dekhio](sportbible.png)
+![dekhio](sportbible_example.png)
 
 Yeah I hate when sportbible does this btw.
 
