@@ -41,34 +41,89 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  function displayChatHistory() {
+    const chatContainer = document.getElementById("chatHistory");
+    chrome.storage.local.get(["chatHistory"], (result) => {
+      const history = result.chatHistory || [];
+      chatContainer.innerHTML = "";
+
+      history.forEach((message) => {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `chat-message ${message.role}-message`;
+        messageDiv.textContent = message.content;
+        chatContainer.appendChild(messageDiv);
+      });
+
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
+  }
+
   userQueryForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const query = queryInput.value;
-    console.log("processing");
-    output.textContent = "Processing...";
+
+    const chatContainer = document.getElementById("chatHistory");
+    const userMessageDiv = document.createElement("div");
+    userMessageDiv.className = "chat-message user-message";
+    userMessageDiv.textContent = query;
+    chatContainer.appendChild(userMessageDiv);
+
+    const loadingDiv = document.createElement("div");
+    loadingDiv.className = "loading-dots";
+    loadingDiv.innerHTML = "<span></span><span></span><span></span>";
+    chatContainer.appendChild(loadingDiv);
+    loadingDiv.style.display = "block";
+
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    queryInput.value = "";
+    autoResize();
 
     chrome.runtime.sendMessage(
       { action: "getPageContent", query: query },
       (response) => {
+        loadingDiv.remove();
+
         if (response.error) {
-          output.textContent = `Error: ${response.error}`;
+          const errorDiv = document.createElement("div");
+          errorDiv.className = "chat-message assistant-message";
+          errorDiv.textContent = `Error: ${response.error}`;
+          chatContainer.appendChild(errorDiv);
         } else if (
           response.data &&
           response.data.choices &&
           response.data.choices.length > 0
         ) {
-          console.log("Got it");
-          output.textContent = response.data.choices[0].message.content;
-          document.getElementById("output").textContent = JSON.stringify(
-            output.textContent,
-            null,
-            2
-          );
+          const assistantMessageDiv = document.createElement("div");
+          assistantMessageDiv.className = "chat-message assistant-message";
+          assistantMessageDiv.textContent =
+            response.data.choices[0].message.content;
+          chatContainer.appendChild(assistantMessageDiv);
         } else {
-          output.textContent = JSON.stringify(response.data);
+          const errorDiv = document.createElement("div");
+          errorDiv.className = "chat-message assistant-message";
+          errorDiv.textContent = JSON.stringify(response.data);
+          chatContainer.appendChild(errorDiv);
         }
+        chatContainer.scrollTop = chatContainer.scrollHeight;
       }
     );
   });
+
+  function autoResize() {
+    queryInput.style.height = "auto";
+    queryInput.style.height = queryInput.scrollHeight + "px";
+  }
+
+  queryInput.addEventListener("input", autoResize);
+
+  autoResize();
+
+  document.getElementById("clearHistory").addEventListener("click", () => {
+    chrome.storage.local.remove(["chatHistory"], () => {
+      output.textContent = "Chat history cleared!";
+    });
+  });
+
   return true;
 });
