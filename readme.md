@@ -8,8 +8,9 @@ Often when I'm browsing the web, I just want to skip to the point without needin
 
 Weird news articles that has craploads of ads where you just wanna get to the point? Long docs from huggingface that you wanna skip?
 
-🆕 UI is better now - looks like a chat app
-🆕 Added previous context to the chat history
+🚨🆕 UI is better now - looks like a chat app
+
+🚨🆕 Added previous context to the chat history
 
 ## Now what?
 
