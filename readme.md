@@ -20,9 +20,11 @@ Here's a simple chrome extension to help you out.
 
 Just ask it about the page you're on, and get to the point.
 
-![dekhio](sportbible_example.png)
+For example, the very annoying sportbible that has craploads of ads with only the single line somewhere in the middle of the page that you want to read to get the actual news out of it ⬇️
 
-Yeah I hate when sportbible does this btw.
+![dekhio](sbible_example.png)
+
+or maybe you're reading a long doc from huggingface and you just want to skip to the part that answers your question⬇️
 
 ![dekhio](docs_example.png)
 
