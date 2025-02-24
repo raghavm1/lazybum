@@ -8,6 +8,9 @@ Often when I'm browsing the web, I just want to skip to the point without needin
 
 Weird news articles that has craploads of ads where you just wanna get to the point? Long docs from huggingface that you wanna skip?
 
+🆕 UI is better now - looks like a chat app
+🆕 Added previous context to the chat history
+
 ## Now what?
 
 Here's a simple chrome extension to help you out.
@@ -18,7 +21,7 @@ Just ask it about the page you're on, and get to the point.
 
 Yeah I hate when sportbible does this btw.
 
-![dekhio](example.png)
+![dekhio](docs_example.png)
 
 Easy to just find what you want really.
 
