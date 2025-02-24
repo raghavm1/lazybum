@@ -1,12 +1,14 @@
 # What's this?
 
-Jump [here](#setup) for setup instructions.
+TL;DR - A chrome extension to ask the web page you're on to summarize itself/answer specific questions about it.
 
 Being lazy doesn't mean you don't wanna learn or read. Maybe the content is too long, like this readme maybe.
 
 Often when I'm browsing the web, I just want to skip to the point without needing to switch apps.
 
 Weird news articles that has craploads of ads where you just wanna get to the point? Long docs from huggingface that you wanna skip?
+
+Jump [here](#setup) for setup instructions.
 
 🚨🆕 UI is better now - looks like a chat app
 
