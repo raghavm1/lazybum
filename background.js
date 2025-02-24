@@ -41,46 +41,114 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
       );
     });
-    return true; // Indicates we will send a response asynchronously
+    return true;
   }
 });
 
 function getBodyContent() {
-  return document.body.innerText;
+  const textContent = document.body.innerText;
+  const htmlContent = document.documentElement.outerHTML;
+
+  const title = document.title;
+  const url = window.location.href;
+
+  const mainContent = Array.from(
+    document.querySelectorAll('main, article, [role="main"]')
+  )
+    .map((el) => el.innerText)
+    .join("\n");
+
+  const headings = Array.from(
+    document.querySelectorAll("h1, h2, h3, h4, h5, h6")
+  )
+    .map((h) => `${h.tagName}: ${h.innerText}`)
+    .join("\n");
+
+  return {
+    title,
+    url,
+    mainContent,
+    headings,
+    textContent,
+    htmlContent,
+  };
 }
 
-function callOpenAIAPI(bodyContent, query, sendResponse) {
+function callOpenAIAPI(pageContent, query, sendResponse) {
   chrome.storage.sync.get(["oai_key"], (result) => {
     const apiKey = result.oai_key;
     if (!apiKey) {
       sendResponse({ error: "API key is not set." });
       return;
     }
-    console.log("about to ask openai...");
-    fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o", // Use the correct model name
-        messages: [
-          // { role: "user", content: "Say this is a test" },
-          {
-            role: "user",
-            content: `Given the following webpage content: "${bodyContent.slice(
-              0,
-              20000
-            )}", answer this question and don't be too verbose: "${query}"`,
-          },
-        ],
-        max_tokens: 150,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => sendResponse({ data: data }))
-      .catch((error) => sendResponse({ error: error.message }));
+
+    chrome.storage.local.get(["chatHistory"], (result) => {
+      let history = result.chatHistory || [];
+
+      const currentSessionMessages = history.filter((msg) => {
+        return true;
+      });
+
+      const contentSummary = `
+Page Title: ${pageContent.title}
+URL: ${pageContent.url}
+Main Headings:
+${pageContent.headings}
+
+Main Content:
+${pageContent.mainContent.slice(0, 5000)}
+      `.trim();
+
+      const systemMessage =
+        currentSessionMessages.length > 0
+          ? `You are an AI assistant analyzing a webpage. Here's the content: ${contentSummary}\n\nPrevious conversation context:\n${currentSessionMessages
+              .map(
+                (msg) =>
+                  `${msg.role === "user" ? "Question" : "Answer"}: ${
+                    msg.content
+                  }`
+              )
+              .join("\n")}`
+          : `You are an AI assistant analyzing a webpage. Here's the content: ${contentSummary}`;
+
+      history.push({
+        role: "user",
+        content: query,
+      });
+
+      history = history.slice(-5);
+
+      fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: systemMessage,
+            },
+            ...history,
+          ],
+          max_tokens: 150,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.choices && data.choices[0]) {
+            history.push({
+              role: "assistant",
+              content: data.choices[0].message.content,
+            });
+            chrome.storage.local.set({ chatHistory: history });
+          }
+          sendResponse({ data: data });
+        })
+        .catch((error) => sendResponse({ error: error.message }));
+    });
   });
   return true;
 }

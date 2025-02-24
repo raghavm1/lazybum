@@ -19,23 +19,34 @@
           <button type="submit" id="submitButtonAPI">Save</button>
         </form>
       </div>
+
       <div id="formContainer">
-        <h3>What do you want from this page?</h3>
-        <form id="queryForm">
-          <input
-            type="text"
-            id="queryInput"
-            required
-            placeholder="Enter query"
-          />
-          <button type="submit" id="submitButtonForm">Enter</button>
-        </form>
+        <div id="chatHistory" class="chat-container"></div>
+        <div class="sticky-bottom">
+          <form id="queryForm" class="query-form">
+            <textarea
+              id="queryInput"
+              required
+              placeholder="Enter query"
+              rows="1"
+              style="
+                resize: none;
+                overflow: hidden;
+                min-height: 30px;
+                width: 100%;
+              "
+            ></textarea>
+            <button type="submit" id="submitButtonForm">Send</button>
+          </form>
+          <div id="removerContainer">
+            Remove existing API key?
+            <button id="removeAPIkey">Yes</button>
+          </div>
+          <div id="clearHistoryContainer">
+            <button id="clearHistory">Clear Chat History</button>
+          </div>
+        </div>
       </div>
-      <div id="output"></div>
-    </div>
-    <div id="removerContainer">
-      Remove existing API key?
-      <button id="removeAPIkey">Yes</button>
     </div>
     <script src="scripts/popup.js"></script>
   </body>
