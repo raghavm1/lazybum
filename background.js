@@ -36,6 +36,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ error: "Failed to get page content" });
           } else {
             const bodyContent = results[0].result;
+            bodyContent.selectedText = request.selectedText;
             callOpenAIAPI(bodyContent, request.query, sendResponse);
           }
         }
@@ -84,32 +85,35 @@ function callOpenAIAPI(pageContent, query, sendResponse) {
 
     chrome.storage.local.get(["chatHistory"], (result) => {
       let history = result.chatHistory || [];
+      const currentSessionMessages = history.filter((msg) => true);
 
-      const currentSessionMessages = history.filter((msg) => {
-        return true;
-      });
+      // adding selection tesxt if it exists
+      const selectedTextSection = pageContent.selectedText
+        ? `\n\nSELECTED TEXT:
+=========================
+"${pageContent.selectedText}"
+=========================
+
+The user's question is specifically about the text selected above.`
+        : "";
 
       const contentSummary = `
 Page Title: ${pageContent.title}
 URL: ${pageContent.url}
-Main Headings:
-${pageContent.headings}
+${selectedTextSection}
 
-Main Content:
+Additional Page Context:
+----------------------
 ${pageContent.mainContent.slice(0, 5000)}
       `.trim();
 
-      const systemMessage =
-        currentSessionMessages.length > 0
-          ? `You are an AI assistant analyzing a webpage. Here's the content: ${contentSummary}\n\nPrevious conversation context:\n${currentSessionMessages
-              .map(
-                (msg) =>
-                  `${msg.role === "user" ? "Question" : "Answer"}: ${
-                    msg.content
-                  }`
-              )
-              .join("\n")}`
-          : `You are an AI assistant analyzing a webpage. Here's the content: ${contentSummary}`;
+      const systemMessage = `You are an AI assistant analyzing a webpage. ${
+        pageContent.selectedText
+          ? "Focus specifically on the selected text when answering."
+          : "Analyze the general page content."
+      }
+
+${contentSummary}`;
 
       history.push({
         role: "user",

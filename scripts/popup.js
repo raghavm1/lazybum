@@ -58,56 +58,93 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  function createSelectionPreview(selectedText) {
+    if (!selectedText) return null;
+
+    const previewDiv = document.createElement("div");
+    previewDiv.className = "selection-preview";
+
+    const truncatedText =
+      selectedText.length > 100
+        ? selectedText.slice(0, 100) + "..."
+        : selectedText;
+
+    previewDiv.innerHTML = `
+      <div class="selected-text-bubble">
+        <span class="selection-label">Selected Text:</span>
+        <p>${truncatedText}</p>
+      </div>
+    `;
+    return previewDiv;
+  }
+
   userQueryForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const query = queryInput.value;
-
     const chatContainer = document.getElementById("chatHistory");
-    const userMessageDiv = document.createElement("div");
-    userMessageDiv.className = "chat-message user-message";
-    userMessageDiv.textContent = query;
-    chatContainer.appendChild(userMessageDiv);
 
-    const loadingDiv = document.createElement("div");
-    loadingDiv.className = "loading-dots";
-    loadingDiv.innerHTML = "<span></span><span></span><span></span>";
-    chatContainer.appendChild(loadingDiv);
-    loadingDiv.style.display = "block";
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.scripting.executeScript(
+        {
+          target: { tabId: tabs[0].id },
+          function: () => window.getSelection().toString().trim(),
+        },
+        (results) => {
+          const selectedText =
+            results && results[0] && results[0].result ? results[0].result : "";
 
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+          if (selectedText) {
+            const selectionPreview = createSelectionPreview(selectedText);
+            chatContainer.appendChild(selectionPreview);
+          }
 
-    queryInput.value = "";
-    autoResize();
+          const userMessageDiv = document.createElement("div");
+          userMessageDiv.className = "chat-message user-message";
+          userMessageDiv.textContent = query;
+          chatContainer.appendChild(userMessageDiv);
 
-    chrome.runtime.sendMessage(
-      { action: "getPageContent", query: query },
-      (response) => {
-        loadingDiv.remove();
+          const loadingDiv = document.createElement("div");
+          loadingDiv.className = "loading-dots";
+          loadingDiv.innerHTML = "<span></span><span></span><span></span>";
+          chatContainer.appendChild(loadingDiv);
 
-        if (response.error) {
-          const errorDiv = document.createElement("div");
-          errorDiv.className = "chat-message assistant-message";
-          errorDiv.textContent = `Error: ${response.error}`;
-          chatContainer.appendChild(errorDiv);
-        } else if (
-          response.data &&
-          response.data.choices &&
-          response.data.choices.length > 0
-        ) {
-          const assistantMessageDiv = document.createElement("div");
-          assistantMessageDiv.className = "chat-message assistant-message";
-          assistantMessageDiv.textContent =
-            response.data.choices[0].message.content;
-          chatContainer.appendChild(assistantMessageDiv);
-        } else {
-          const errorDiv = document.createElement("div");
-          errorDiv.className = "chat-message assistant-message";
-          errorDiv.textContent = JSON.stringify(response.data);
-          chatContainer.appendChild(errorDiv);
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+
+          queryInput.value = "";
+          autoResize();
+
+          chrome.runtime.sendMessage(
+            {
+              action: "getPageContent",
+              query: query,
+              selectedText: selectedText,
+            },
+            (response) => {
+              loadingDiv.remove();
+
+              if (response.error) {
+                const errorDiv = document.createElement("div");
+                errorDiv.className = "chat-message assistant-message";
+                errorDiv.textContent = `Error: ${response.error}`;
+                chatContainer.appendChild(errorDiv);
+              } else if (
+                response.data &&
+                response.data.choices &&
+                response.data.choices.length > 0
+              ) {
+                const assistantMessageDiv = document.createElement("div");
+                assistantMessageDiv.className =
+                  "chat-message assistant-message";
+                assistantMessageDiv.textContent =
+                  response.data.choices[0].message.content;
+                chatContainer.appendChild(assistantMessageDiv);
+              }
+              chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+          );
         }
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      }
-    );
+      );
+    });
   });
 
   function autoResize() {
@@ -124,6 +161,29 @@ document.addEventListener("DOMContentLoaded", function () {
       output.textContent = "Chat history cleared!";
     });
   });
+
+  function checkForSelectedText() {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      chrome.scripting.executeScript(
+        {
+          target: { tabId: tabs[0].id },
+          function: () => window.getSelection().toString().trim(),
+        },
+        (results) => {
+          const selectedText = results && results[0] && results[0].result;
+          const queryInput = document.getElementById("queryInput");
+
+          if (selectedText) {
+            queryInput.placeholder = "Ask about the selected text...";
+          } else {
+            queryInput.placeholder = "Ask a question about this page...";
+          }
+        }
+      );
+    });
+  }
+
+  checkForSelectedText();
 
   return true;
 });
