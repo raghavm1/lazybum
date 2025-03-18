@@ -10,6 +10,8 @@ Weird news articles that has craploads of ads where you just wanna get to the po
 
 Jump [here](#setup) for setup instructions.
 
+🚨🆕 Now you can ask about selected text on the webpage! Just select the text using your cursor on any site, click on the extension and ask away!
+
 🚨🆕 UI is better now - looks like a chat app
 
 🚨🆕 Added previous context to the chat history
