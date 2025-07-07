@@ -83,8 +83,11 @@ function callOpenAIAPI(pageContent, query, sendResponse) {
       return;
     }
 
-    chrome.storage.local.get(["chatHistory"], (result) => {
-      let history = result.chatHistory || [];
+    const urlKey = createUrlKey(pageContent.url);
+    const historyKey = `chatHistory_${urlKey}`;
+
+    chrome.storage.local.get([historyKey], (result) => {
+      let history = result[historyKey] || [];
       const currentSessionMessages = history.filter((msg) => true);
 
       // adding selection tesxt if it exists
@@ -104,7 +107,7 @@ ${selectedTextSection}
 
 Additional Page Context:
 ----------------------
-${pageContent.mainContent.slice(0, 5000)}
+${pageContent.mainContent}
       `.trim();
 
       const systemMessage = `You are an AI assistant analyzing a webpage. ${
@@ -147,7 +150,10 @@ ${contentSummary}`;
               role: "assistant",
               content: data.choices[0].message.content,
             });
-            chrome.storage.local.set({ chatHistory: history });
+            // Save history with URL-specific key
+            const saveData = {};
+            saveData[historyKey] = history;
+            chrome.storage.local.set(saveData);
           }
           sendResponse({ data: data });
         })
@@ -155,4 +161,19 @@ ${contentSummary}`;
     });
   });
   return true;
+}
+
+function createUrlKey(url) {
+  try {
+    const urlObj = new URL(url);
+    const key = (urlObj.hostname + urlObj.pathname)
+      .replace(/[^a-zA-Z0-9]/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^_|_$/g, "")
+      .slice(0, 100);
+
+    return key || "default";
+  } catch (e) {
+    return "default";
+  }
 }
