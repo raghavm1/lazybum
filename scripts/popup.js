@@ -43,18 +43,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function displayChatHistory() {
     const chatContainer = document.getElementById("chatHistory");
-    chrome.storage.local.get(["chatHistory"], (result) => {
-      const history = result.chatHistory || [];
-      chatContainer.innerHTML = "";
 
-      history.forEach((message) => {
-        const messageDiv = document.createElement("div");
-        messageDiv.className = `chat-message ${message.role}-message`;
-        messageDiv.textContent = message.content;
-        chatContainer.appendChild(messageDiv);
-      });
+    // Get current tab URL to fetch the correct history
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0] && tabs[0].url) {
+        const urlKey = createUrlKey(tabs[0].url);
+        const historyKey = `chatHistory_${urlKey}`;
 
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+        chrome.storage.local.get([historyKey], (result) => {
+          const history = result[historyKey] || [];
+          chatContainer.innerHTML = "";
+
+          history.forEach((message) => {
+            const messageDiv = document.createElement("div");
+            messageDiv.className = `chat-message ${message.role}-message`;
+            messageDiv.textContent = message.content;
+            chatContainer.appendChild(messageDiv);
+          });
+
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        });
+      }
     });
   }
 
@@ -157,8 +166,16 @@ document.addEventListener("DOMContentLoaded", function () {
   autoResize();
 
   document.getElementById("clearHistory").addEventListener("click", () => {
-    chrome.storage.local.remove(["chatHistory"], () => {
-      output.textContent = "Chat history cleared!";
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0] && tabs[0].url) {
+        const urlKey = createUrlKey(tabs[0].url);
+        const historyKey = `chatHistory_${urlKey}`;
+
+        chrome.storage.local.remove([historyKey], () => {
+          console.log("Chat history cleared for current page");
+          displayChatHistory(); // Refresh the display
+        });
+      }
     });
   });
 
@@ -187,3 +204,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   return true;
 });
+
+function createUrlKey(url) {
+  try {
+    const urlObj = new URL(url);
+    const key = (urlObj.hostname + urlObj.pathname)
+      .replace(/[^a-zA-Z0-9]/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^_|_$/g, "")
+      .slice(0, 100);
+
+    return key || "default";
+  } catch (e) {
+    return "default";
+  }
+}
