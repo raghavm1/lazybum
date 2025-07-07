@@ -1,13 +1,23 @@
 {
   "manifest_version": 3,
-  "name": "Tell me what",
+  "name": "LazyBum",
   "description": "Answer everything so that you don't need to spend time for it",
   "version": "1.0",
   "permissions": ["storage", "activeTab", "scripting"],
 
+  "icons": {
+    "16": "bulb.png",
+    "48": "bulb.png",
+    "128": "bulb.png"
+  },
+
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "bulb.png"
+    "default_icon": {
+      "16": "bulb.png",
+      "48": "bulb.png",
+      "128": "bulb.png"
+    }
   },
 
   "background": {
